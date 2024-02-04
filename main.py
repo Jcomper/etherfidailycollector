@@ -21,32 +21,13 @@ async def sleep(sleep_from: int, sleep_to: int):
 async def get_info(session, wallet, retry = 0):
     max_retry = 3
     try:
-
-        if (len(api_keys[chain])) > 0:
-            api_key = random.choice(api_keys[chain])
-            get_latest_block_url = f'{base_url[chain]}/api?module=proxy&action=eth_blockNumber&apikey={api_key}'
-        else:
-            get_latest_block_url = f'{base_url[chain]}/api?module=proxy&action=eth_blockNumber'
-
-
-        async with session.get(get_latest_block_url, ssl=False, timeout=10) as resp:
+        get_etherfi_url = f'https://app.ether.fi/api/portfolio/{wallet}'
+        
+        async with session.get(get_etherfi_url, headers=etherfi_headers, ssl=False, timeout=10) as resp:
             resp_json = await resp.json(content_type=None)
-            row_data[wallet]['blockNumber'] = resp_json['result']
-
-        if row_data[wallet]['blockNumber'] == "Invalid API Key":
-            logger.error(f'{wallet} : {chain} : Invalid API Key : {api_key}')
-            raise('Invalid API Key')
-
-        else: 
-            row_data[wallet]['blockNumber'] = hexToInt(row_data[wallet]['blockNumber'])
-            logger.success(f'{wallet} : ethereum latest block {row_data[wallet]["blockNumber"]}')
-            get_etherfi_url = f'https://app.ether.fi/api/portfolio/{wallet}/{row_data[wallet]["blockNumber"]}'
-            
-            async with session.get(get_etherfi_url, headers=etherfi_headers, ssl=False, timeout=10) as resp:
-                resp_json = await resp.json(content_type=None)
-                row_data[wallet]['etherfi']['loyaltyPoints'] = resp_json['loyaltyPoints']
-                row_data[wallet]['etherfi']['eigenlayerPoints'] = resp_json['eigenlayerPoints']
-                row_data[wallet]['etherfi']['dailyCollector'].update(resp_json['badges'][0])
+            row_data[wallet]['etherfi']['loyaltyPoints'] = resp_json['loyaltyPoints']
+            row_data[wallet]['etherfi']['eigenlayerPoints'] = resp_json['eigenlayerPoints']
+            row_data[wallet]['etherfi']['dailyCollector'].update(resp_json['badges'][0])
 
     except Exception as error:
         logger.error(f'{wallet} | error : {error}')
@@ -92,7 +73,6 @@ async def run():
 
     for wallet in WALLETS:
         row_data.update({wallet: {
-            "blockNumber" : {},
         }})
 
         row_data[wallet].update({'etherfi': {'loyaltyPoints': {}, 'eigenlayerPoints': {}, 'dailyCollector':{}}})
