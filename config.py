@@ -17,3 +17,6 @@ logger.add("results/outputXlogfile.log", rotation="1 day")
 outfile = ''
 with open(f"{outfile}data/wallets.txt", "r") as f:
     WALLETS = [row.strip() for row in f]
+
+with open(f"{outfile}data/proxies.txt", "r") as f:
+    PROXIES = [row.strip() for row in f]

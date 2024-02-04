@@ -16,6 +16,8 @@ python main.py
 # Before you start:
 - rename data\wallets_EXAMPLE.txt -> data\wallets.txt
 - put your wallets (NOT PRIVATE KEYS) to data\wallets.txt
+- rename data\proxies_EXAMPLE.txt -> data\proxies.txt
+- put your proxies in format user:password@IP:PORT to data\proxies.txt
 
 
 <h2>⚙️ Settings</h2>

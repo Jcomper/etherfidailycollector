@@ -18,12 +18,23 @@ async def sleep(sleep_from: int, sleep_to: int):
     for _ in range(delay):
         await asyncio.sleep(1)
 
+async def get_proxy(wallet):
+    if 'proxy' in row_data[wallet]:
+        if len(row_data[wallet]['proxy']) > 0:
+            return f"http://{row_data[wallet]['proxy']}"
+        else:
+            return None
+    else:
+        return None
+
 async def get_info(session, wallet, retry = 0):
+    proxy = await get_proxy(wallet)
+
     max_retry = 3
     try:
-        get_etherfi_url = f'https://app.ether.fi/api/portfolio/{wallet}'
+        get_etherfi_url = f'https://app.ether.fi/api/portfolio/v1/{wallet}'
         
-        async with session.get(get_etherfi_url, headers=etherfi_headers, ssl=False, timeout=10) as resp:
+        async with session.get(get_etherfi_url, headers=etherfi_headers, ssl=False, proxy=proxy, timeout=10) as resp:
             resp_json = await resp.json(content_type=None)
             row_data[wallet]['etherfi']['loyaltyPoints'] = resp_json['loyaltyPoints']
             row_data[wallet]['etherfi']['eigenlayerPoints'] = resp_json['eigenlayerPoints']
@@ -42,9 +53,10 @@ async def get_info(session, wallet, retry = 0):
 
 async def process_daily_collector(session, wallet):
     try:
+        proxy = await get_proxy(wallet)
         process_etherfi_url = f'https://app.ether.fi/api/dailyStreak/updateStreak'
         payload = {'account': f'{wallet}'}
-        async with session.post(process_etherfi_url, data=json.dumps(payload), headers = etherfi_headers, ssl=False, timeout=10) as resp:
+        async with session.post(process_etherfi_url, data=json.dumps(payload), headers = etherfi_headers, ssl=False, proxy=proxy, timeout=10) as resp:
             resp_json = await resp.json(content_type=None)
             if resp_json['message'] == 'Streak updated successfully':
                 logger.success(f'{wallet} : {resp_json["message"]}')
@@ -72,8 +84,14 @@ async def main(wallet):
 async def run():
 
     for wallet in WALLETS:
+
         row_data.update({wallet: {
         }})
+
+        walletIndex = WALLETS.index(wallet)
+        if len(PROXIES) >= walletIndex + 1:
+            proxy = PROXIES[walletIndex]
+            row_data[wallet].update({'proxy': proxy})
 
         row_data[wallet].update({'etherfi': {'loyaltyPoints': {}, 'eigenlayerPoints': {}, 'dailyCollector':{}}})
 
