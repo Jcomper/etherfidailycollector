@@ -75,7 +75,7 @@ async def main(wallet):
         cooldownActive = row_data[wallet]['etherfi']['dailyCollector']['cooldownActive']
         loyaltyPoints = row_data[wallet]['etherfi']['loyaltyPoints']
 
-        if loyaltyPoints > 0 and cooldownActive == False:
+        if cooldownActive == False:
             logger.success(f'{wallet} : Do collect: LoyaltyPoints = {loyaltyPoints} : Cooldown Active = {cooldownActive}')
             await process_daily_collector(session, wallet)
         else:
