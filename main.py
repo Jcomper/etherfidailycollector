@@ -36,8 +36,28 @@ async def get_info(session, wallet, retry = 0):
         
         async with session.get(get_etherfi_url, headers=etherfi_headers, ssl=False, proxy=proxy, timeout=10) as resp:
             resp_json = await resp.json(content_type=None)
-            row_data[wallet]['etherfi']['loyaltyPoints'] = resp_json['loyaltyPoints']
-            row_data[wallet]['etherfi']['eigenlayerPoints'] = resp_json['eigenlayerPoints']
+            loyaltyPoints = resp_json['loyaltyPoints']
+            loyaltyPoints += resp_json['balancer']["loyaltyPoints"]
+            loyaltyPoints += resp_json['curve']["loyaltyPoints"]
+            loyaltyPoints += resp_json['gravita']["loyaltyPoints"]
+            loyaltyPoints += resp_json['maverick']["loyaltyPoints"]
+            loyaltyPoints += resp_json['sommelier']["loyaltyPoints"]
+            loyaltyPoints += resp_json['pendle']["loyaltyPoints"]
+            loyaltyPoints += resp_json['term']["loyaltyPoints"]
+            loyaltyPoints += resp_json['mega']["loyaltyPoints"]
+            
+            eigenlayerPoints = resp_json['eigenlayerPoints']
+            eigenlayerPoints += resp_json['balancer']["eigenlayerPoints"]
+            eigenlayerPoints += resp_json['curve']["eigenlayerPoints"]
+            eigenlayerPoints += resp_json['gravita']["eigenlayerPoints"]
+            eigenlayerPoints += resp_json['maverick']["eigenlayerPoints"]
+            eigenlayerPoints += resp_json['sommelier']["eigenlayerPoints"]
+            eigenlayerPoints += resp_json['pendle']["eigenlayerPoints"]
+            eigenlayerPoints += resp_json['term']["eigenlayerPoints"]
+            eigenlayerPoints += resp_json['mega']["eigenlayerPoints"]
+            
+            row_data[wallet]['etherfi']['loyaltyPoints'] = loyaltyPoints
+            row_data[wallet]['etherfi']['eigenlayerPoints'] = eigenlayerPoints
             row_data[wallet]['etherfi']['dailyCollector'].update(resp_json['badges'][0])
 
     except Exception as error:
@@ -73,13 +93,21 @@ async def main(wallet):
         await get_info(session, wallet)
 
         cooldownActive = row_data[wallet]['etherfi']['dailyCollector']['cooldownActive']
+        dailyStreak = row_data[wallet]['etherfi']['dailyCollector']['dailyStreak']
+        dailyStreakPoints = row_data[wallet]['etherfi']['dailyCollector']['points']
+        
         loyaltyPoints = row_data[wallet]['etherfi']['loyaltyPoints']
+        eigenlayerPoints = row_data[wallet]['etherfi']['eigenlayerPoints']
 
         if cooldownActive == False:
-            logger.success(f'{wallet} : Do collect: LoyaltyPoints = {loyaltyPoints} : Cooldown Active = {cooldownActive}')
+            logger.success(f'{wallet} : Do collect')
+            logger.success(f'LoyaltyPoints = {loyaltyPoints} : eigenlayerPoints = {eigenlayerPoints}')
+            logger.success(f'DailyStreak = {dailyStreak} : DailyStreakPoints = {dailyStreakPoints} : Cooldown Active = {cooldownActive}')
             await process_daily_collector(session, wallet)
         else:
-            logger.warning(f'{wallet} : Nothing to collect: LoyaltyPoints = {loyaltyPoints} : Cooldown Active = {cooldownActive}')
+            logger.warning(f'{wallet} : Nothing to collect')
+            logger.warning(f'LoyaltyPoints = {loyaltyPoints} : eigenlayerPoints = {eigenlayerPoints}')
+            logger.warning(f'DailyStreak = {dailyStreak} : DailyStreakPoints = {dailyStreakPoints} : Cooldown Active = {cooldownActive}')
 
 async def run():
 
