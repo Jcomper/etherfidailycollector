@@ -32,7 +32,7 @@ async def get_info(session, wallet, retry = 0):
 
     max_retry = 3
     try:
-        get_etherfi_url = f'https://app.ether.fi/api/portfolio/v1/{wallet}'
+        get_etherfi_url = f'https://app.ether.fi/api/portfolio/v2/{wallet}'
         
         async with session.get(get_etherfi_url, headers=etherfi_headers, ssl=False, proxy=proxy, timeout=10) as resp:
             resp_json = await resp.json(content_type=None)
