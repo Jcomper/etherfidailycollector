@@ -44,9 +44,10 @@ async def get_info(session, wallet, retry = 0):
             row_data[wallet]['etherfi']['loyaltyPoints'] = loyaltyPoints
             row_data[wallet]['etherfi']['eigenlayerPoints'] = eigenlayerPoints
             badges = resp_json['badges']
-            for badge in badges:
-                if badge['name'] == 'daily-collector':
-                    row_data[wallet]['etherfi']['dailyCollector'].update(badge)
+            for badgeCategory in badges:
+                for badge in badges[badgeCategory]:
+                    if badge['name'] == 'daily-collector':
+                        row_data[wallet]['etherfi']['dailyCollector'].update(badge)
 
     except Exception as error:
         logger.error(f'{wallet} | error : {error}')
