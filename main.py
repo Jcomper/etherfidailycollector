@@ -36,18 +36,15 @@ async def get_info(session, wallet, retry = 0):
         
         async with session.get(get_etherfi_url, headers=etherfi_headers, ssl=False, proxy=proxy, timeout=10) as resp:
             resp_json = await resp.json(content_type=None)
-            if ('totalIntegrationLoyaltyPoints' in resp_json):
-                loyaltyPoints = resp_json['totalIntegrationLoyaltyPoints']
-            if ('totalIntegrationEigenLayerPoints' in resp_json):
-                eigenlayerPoints = resp_json['totalIntegrationEigenLayerPoints']
+            if ('s3Points' in resp_json):
+                loyaltyPoints = resp_json['s3Points']
+            if ('totalEigenLayerPoints' in resp_json):
+                eigenlayerPoints = resp_json['totalEigenLayerPoints']
 
             row_data[wallet]['etherfi']['loyaltyPoints'] = loyaltyPoints
             row_data[wallet]['etherfi']['eigenlayerPoints'] = eigenlayerPoints
-            badges = resp_json['badges']
-            for badgeCategory in badges:
-                for badge in badges[badgeCategory]:
-                    if badge['name'] == 'daily-collector':
-                        row_data[wallet]['etherfi']['dailyCollector'].update(badge)
+            dailyStreak = resp_json['dailyStreak']
+            row_data[wallet]['etherfi']['dailyCollector'].update(dailyStreak)
 
     except Exception as error:
         logger.error(f'{wallet} | error : {error}')
@@ -83,21 +80,20 @@ async def main(wallet):
 
         cooldownActive = row_data[wallet]['etherfi']['dailyCollector']['cooldownActive']
         dailyStreak = row_data[wallet]['etherfi']['dailyCollector']['dailyStreak']
-        dailyStreakPoints = row_data[wallet]['etherfi']['dailyCollector']['points']
-        dailyStreakMaxPoints = row_data[wallet]['etherfi']['dailyCollector']['maxPoints']
+        nextCheckinPoints = row_data[wallet]['etherfi']['dailyCollector']['nextCheckinPoints']
 
         loyaltyPoints = row_data[wallet]['etherfi']['loyaltyPoints']
         eigenlayerPoints = row_data[wallet]['etherfi']['eigenlayerPoints']
 
         if cooldownActive == False:
             logger.success(f'{wallet} : Do collect')
-            logger.success(f'LoyaltyPoints = {loyaltyPoints} : eigenlayerPoints = {eigenlayerPoints}')
-            logger.success(f'DailyStreak = {dailyStreak} : DailyStreakPoints = {dailyStreakPoints} : MaxDailyStreakPoints = {dailyStreakMaxPoints} : Cooldown Active = {cooldownActive}')
+            logger.success(f'S3 Points = {loyaltyPoints} : eigenlayerPoints = {eigenlayerPoints}')
+            logger.success(f'DailyStreak = {dailyStreak} : Next checking points = {nextCheckinPoints} : Cooldown Active = {cooldownActive}')
             await process_daily_collector(session, wallet)
         else:
             logger.warning(f'{wallet} : Nothing to collect')
-            logger.warning(f'LoyaltyPoints = {loyaltyPoints} : eigenlayerPoints = {eigenlayerPoints}')
-            logger.warning(f'DailyStreak = {dailyStreak} : DailyStreakPoints = {dailyStreakPoints} : MaxDailyStreakPoints = {dailyStreakMaxPoints} : Cooldown Active = {cooldownActive}')
+            logger.warning(f'S3 Points = {loyaltyPoints} : eigenlayerPoints = {eigenlayerPoints}')
+            logger.success(f'DailyStreak = {dailyStreak} : Next checking points = {nextCheckinPoints} : Cooldown Active = {cooldownActive}')
 
 async def run():
 
