@@ -33,13 +33,13 @@ async def get_info(session, wallet, retry = 0):
     max_retry = 3
     try:
         get_etherfi_url = f'https://app.ether.fi/api/portfolio/v3/{wallet}'
-        
+
         async with session.get(get_etherfi_url, headers=etherfi_headers, ssl=False, proxy=proxy, timeout=10) as resp:
             resp_json = await resp.json(content_type=None)
             if ('s3Points' in resp_json):
                 loyaltyPoints = resp_json['s3Points']
-            if ('totalEigenLayerPoints' in resp_json):
-                eigenlayerPoints = resp_json['totalEigenLayerPoints']
+            if ('totalEigenlayerPoints' in resp_json):
+                eigenlayerPoints = resp_json['totalEigenlayerPoints']
 
             row_data[wallet]['etherfi']['loyaltyPoints'] = loyaltyPoints
             row_data[wallet]['etherfi']['eigenlayerPoints'] = eigenlayerPoints
